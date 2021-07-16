@@ -7,8 +7,8 @@ import numpy as np
 import statsmodels as sm
 import statsmodels.formula.api as smf
 from stargazer.stargazer import Stargazer
-from linearmodels import IV2SLS
-from linearmodels import IVLIML
+from linearmodels.iv.model import IV2SLS
+from linearmodels.iv.model import IVLIML
 from linearmodels.iv.results import IVModelComparison
 
 from auxiliary import *
