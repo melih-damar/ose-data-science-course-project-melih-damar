@@ -1,5 +1,5 @@
 """This module contains auxiliary functions for tables presented in the main notebook."""
-!pip install stargazer
+pip install stargazer
 
 import matplotlib as plt
 import pandas as pd
