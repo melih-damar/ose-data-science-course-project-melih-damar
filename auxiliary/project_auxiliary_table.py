@@ -1,5 +1,5 @@
-"""This module contains auxiliary functions for RD predictions used in the main notebook."""
-import json
+"""This module contains auxiliary functions for tables presented in the main notebook."""
+!pip install stargazer
 
 import matplotlib as plt
 import pandas as pd
