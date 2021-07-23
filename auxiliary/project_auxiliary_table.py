@@ -14,6 +14,7 @@ from linearmodels.iv.results import IVModelComparison
 from auxiliary import *
 
 def prepare_country_data(df):
+    """" This functions prepares data to construct summary statistics for cross-country data set and requires data set for cross-country as an input"""
     country_data=df[df["tyr05_n"].notna()]
     country_data = df.rename(columns={"code":"Country Name",
                                       "logpgdp05":"Log GDP per capita",
@@ -47,7 +48,7 @@ def prepare_country_data(df):
     return country_data
 
 def prepare_region_data(df):
-    """" This functions prepares data to construct summary statistics"""
+    """" This functions prepares data to construct summary statistics cross-region dataset and requires dataset for cross-region as an input"""
     
     df=df[df["yearsed"].notna()&df["lgdp"].notna()&df["capital_old"].notna()]
     
@@ -73,6 +74,7 @@ def prepare_region_data(df):
 
 
 def get_summary_statistics(country_data,region_data):
+    """" This functions returns the table for summary statisitcs."""
     ## Preparing data
     
     prepared_country_data= prepare_country_data(country_data)
@@ -852,3 +854,163 @@ def get_table10(df):
     
     
     return table1,table2
+
+
+def prepare_ext_data(country_data,ext_df):
+    
+    country_data=country_data.loc[country_data["code"].isin(ext_df["code"])]
+    ext_df=ext_df.rename(columns={"ruleoflaw":"ruleoflaw2017"})
+    ext_df = pd.merge(country_data,ext_df,on="code")
+    #ext_df=ext_df.loc[ext_df["ruleoflaw"]<1.5]
+    
+    return ext_df
+
+def get_table11(ext_data):
+    ext_data.loc[ext_data["code"]=="HKG","dummy_dennis"]=0.0
+    ext_data.loc[:,"inter"]=1
+    
+    ext_data.loc[:,"predic"]= smf.ols(formula=" lays ~ prienr1900+protmiss+dummy_dennis", data=ext_data).fit(cov_type='HC3').predict()
+    result1=smf.ols(formula="lgdpp2017 ~ predic", data=ext_data).fit(cov_type='HC3')
+
+    ext_data.loc[:,"predic"]= smf.ols(formula=" lays ~ prienr1900+lat_abst+protmiss+dummy_dennis", data=ext_data).fit(cov_type='HC3').predict()
+    result2=smf.ols(formula="lgdpp2017 ~ predic+lat_abst", data=ext_data).fit(cov_type='HC3')
+
+    ext_data.loc[:,"predic"]= smf.ols(formula=" lays ~ prienr1900+lat_abst+africa+america+asia+protmiss+dummy_dennis",                                      
+                                          data=ext_data).fit(cov_type='HC3').predict()
+    result3=smf.ols(formula="lgdpp2017 ~ predic+lat_abst+africa+america+asia", data=ext_data).fit(cov_type='HC3')
+
+    ext_data.loc[:,"predic"]= smf.ols(formula=" lays ~ prienr1900+lat_abst+africa+america+asia+f_french+f_brit+protmiss+dummy_dennis", 
+                                          data=ext_data).fit(cov_type='HC3').predict()
+    result4=smf.ols(formula="lgdpp2017 ~ predic+lat_abst+africa+america+asia+f_french+f_brit", data=ext_data).fit(cov_type='HC3')
+
+    ext_data.loc[:,"predic"]= smf.ols(formula=" lays ~ prienr1900+lcapped+lpd1500s+protmiss+dummy_dennis", data=ext_data).fit(cov_type='HC3').predict()
+    result5=smf.ols(formula="lgdpp2017 ~ predic+lcapped+lpd1500s", data=ext_data).fit(cov_type='HC3')
+
+    ext_data.loc[:,"predic"]= smf.ols(formula=" lays ~ prienr1900+lat_abst+lcapped+lpd1500s+protmiss+dummy_dennis",
+                                          data=ext_data).fit(cov_type='HC3').predict()
+    result6=smf.ols(formula="lgdpp2017 ~ predic+lat_abst+lcapped+lpd1500s", data=ext_data).fit(cov_type='HC3')
+
+    ext_data.loc[:,"predic"]= smf.ols(formula=" lays ~ prienr1900+lat_abst+africa+america+asia+lcapped+lpd1500s+protmiss+dummy_dennis", 
+                                          data=ext_data).fit(cov_type='HC3').predict()
+    result7=smf.ols(formula="lgdpp2017 ~ predic+lat_abst+africa+america+asia+lcapped+lpd1500s", data=ext_data).fit(cov_type='HC3')
+    
+    ext_data.loc[:,"predic"]=smf.ols(formula="lays~prienr1900+lat_abst+africa+america+asia+f_french+f_brit+lcapped+lpd1500s+protmiss+dummy_dennis",
+                                    data=ext_data).fit(cov_type='HC3').predict()
+    result8=smf.ols(formula="lgdpp2017 ~ predic+lat_abst+africa+america+asia+f_french+f_brit+lcapped+lpd1500s", data=ext_data).fit(cov_type='HC3')
+    
+    table1=Stargazer([result1,result2,result3,result4,result5,result6,result7,result8])
+    table1.covariate_order(["predic","lat_abst","africa","america","asia","f_french","f_brit","lcapped","lpd1500s"])
+    table1.rename_covariates({"predic":"Learning-Adjusted Years of schooling","dummy_dennis":"Dummy for different source of protestant missionaries","lat_abst":"Latitude",
+                             "africa":"Africa","america":"America","asia":"Asia","f_brit":"British colony","f_french":"French Colony",
+                        "lcapped":"Log capped potential settler mortality","lpd1500s":"log population density in 1500"})
+    table1.dependent_variable_name("Dependent Variable: log GDP per capita in 2017")
+    table1.show_r2=True
+    table1.show_n =True
+    table1.title("Table 11, Panel A: Second‐stage regressions")
+    table1.custom_columns("2SLS")
+    
+    return table1
+
+def get_table12(ext_data):
+    ext_data.loc[ext_data["code"]=="HKG","dummy_dennis"]=0.0
+    ext_data.loc[:,"inter"]=1
+    
+    ext_data.loc[:,"predic"]= smf.ols(formula=" ruleoflaw2017 ~ +lcapped+lpd1500s", data=ext_data).fit(cov_type='HC3').predict()
+    result1=smf.ols(formula="lgdpp2017 ~ predic", data=ext_data).fit(cov_type='HC3')
+
+    ext_data.loc[:,"predic"]= smf.ols(formula=" ruleoflaw2017 ~ +lcapped+lpd1500s+lat_abst", data=ext_data).fit(cov_type='HC3').predict()
+    result2=smf.ols(formula="lgdpp2017 ~ predic+lat_abst", data=ext_data).fit(cov_type='HC3')
+
+    ext_data.loc[:,"predic"]= smf.ols(formula=" ruleoflaw2017 ~ +lcapped+lpd1500s+lat_abst+africa+america+asia",                                      
+                                          data=ext_data).fit(cov_type='HC3').predict()
+    result3=smf.ols(formula="lgdpp2017 ~ predic+lat_abst+africa+america+asia", data=ext_data).fit(cov_type='HC3')
+
+    ext_data.loc[:,"predic"]= smf.ols(formula=" ruleoflaw2017 ~ +lcapped+lpd1500s+lat_abst+africa+america+asia+f_french+f_brit", 
+                                          data=ext_data).fit(cov_type='HC3').predict()
+    result4=smf.ols(formula="lgdpp2017 ~ predic+lat_abst+africa+america+asia+f_french+f_brit", data=ext_data).fit(cov_type='HC3')
+
+    ext_data.loc[:,"predic"]= smf.ols(formula=" ruleoflaw2017 ~ prienr1900+lcapped+lpd1500s+protmiss+dummy_dennis", data=ext_data).fit(cov_type='HC3').predict()
+    result5=smf.ols(formula="lgdpp2017 ~ predic+lcapped+lpd1500s+prienr1900", data=ext_data).fit(cov_type='HC3')
+
+    ext_data.loc[:,"predic"]= smf.ols(formula=" ruleoflaw2017 ~ prienr1900+lat_abst+lcapped+lpd1500s+protmiss+dummy_dennis",
+                                          data=ext_data).fit(cov_type='HC3').predict()
+    result6=smf.ols(formula="lgdpp2017 ~ predic+lat_abst+prienr1900", data=ext_data).fit(cov_type='HC3')
+
+    ext_data.loc[:,"predic"]= smf.ols(formula=" ruleoflaw2017 ~ prienr1900+lat_abst+africa+america+asia+lcapped+lpd1500s+protmiss+dummy_dennis", 
+                                          data=ext_data).fit(cov_type='HC3').predict()
+    result7=smf.ols(formula="lgdpp2017 ~ predic+lat_abst+africa+america+asia+prienr1900", data=ext_data).fit(cov_type='HC3')
+    
+    ext_data.loc[:,"predic"]=smf.ols(formula="ruleoflaw2017~prienr1900+lat_abst+africa+america+asia+f_french+f_brit+lcapped+lpd1500s+protmiss+dummy_dennis",
+                                    data=ext_data).fit(cov_type='HC3').predict()
+    result8=smf.ols(formula="lgdpp2017 ~ predic+lat_abst+africa+america+asia+f_french+f_brit+prienr1900", data=ext_data).fit(cov_type='HC3')
+    
+    table1=Stargazer([result1,result2,result3,result4,result5,result6,result7,result8])
+    table1.covariate_order(["predic","lat_abst","africa","america","asia","f_french","f_brit","prienr1900"])
+    table1.rename_covariates({"predic":"Rule of law index in 2018","dummy_dennis":"Dummy for different source of protestant missionaries","lat_abst":"Latitude",
+                             "africa":"Africa","america":"America","asia":"Asia","f_brit":"British colony","f_french":"French Colony",
+                        "protmiss":"Protestant missionaries in early 2Oth century","prienr1900":"Primary enrollment in 1900"})
+    table1.dependent_variable_name("Dependent Variable: log GDP per capita in 2017")
+    table1.show_r2=True
+    table1.show_n =True
+    table1.title("Table 12, Panel A: Second‐stage regressions")
+    table1.custom_columns("2SLS")
+    
+    return table1
+
+def get_table13(ext_data):
+    ext_data.loc[ext_data["code"]=="HKG","dummy_dennis"]=0.0
+    
+    ext_data.loc[:,"predic_ruleoflaw2017"]= smf.ols(formula="ruleoflaw2017 ~lcapped+lpd1500s+prienr1900+protmiss+dummy_dennis", 
+                                                    data=ext_data).fit(cov_type='HC3').predict()
+    ext_data.loc[:,"predic_lays"]= smf.ols(formula="lays ~ lcapped+lpd1500s+prienr1900", 
+                                                    data=ext_data).fit(cov_type='HC3').predict()
+    result1=smf.ols(formula="lgdpp2017  ~ predic_ruleoflaw2017+predic_lays", data=ext_data).fit(cov_type='HC3')
+    
+    ext_data.loc[:,"predic_ruleoflaw2017"]= smf.ols(formula="ruleoflaw2017 ~lcapped+prienr1900+lat_abst+lpd1500s+protmiss+dummy_dennis", 
+                                                    data=ext_data).fit(cov_type='HC3').predict()
+    ext_data.loc[:,"predic_lays"]= smf.ols(formula="lays  ~lcapped+lpd1500s+prienr1900+lat_abst", 
+                                                    data=ext_data).fit(cov_type='HC3').predict()
+    result2=smf.ols(formula="lgdpp2017  ~ predic_ruleoflaw2017+predic_lays+lat_abst+protmiss+dummy_dennis", data=ext_data).fit(cov_type='HC3')
+    
+    ext_data.loc[:,"predic_ruleoflaw2017"]= smf.ols(formula="ruleoflaw2017 ~lcapped+lpd1500s+prienr1900+lat_abst+africa+america+asia+protmiss+dummy_dennis", 
+                                                    data=ext_data).fit(cov_type='HC3').predict()
+    ext_data.loc[:,"predic_lays"]= smf.ols(formula="lays  ~lcapped+lpd1500s+prienr1900+lat_abst+africa+america+asia+protmiss+dummy_dennis", 
+                                                data=ext_data).fit(cov_type='HC3').predict()
+    result3=smf.ols(formula="lgdpp2017  ~ predic_ruleoflaw2017+predic_lays+lat_abst+africa+america+asia", data=ext_data).fit(cov_type='HC3')
+    
+    ext_data.loc[:,"predic_ruleoflaw2017"]= smf.ols(formula="ruleoflaw2017 ~lcapped+lpd1500s+prienr1900+lat_abst+africa+america+asia+f_brit+f_french+protmiss+dummy_dennis", 
+                                                    data=ext_data).fit(cov_type='HC3').predict()
+    ext_data.loc[:,"predic_lays"]= smf.ols(formula="lays  ~lcapped+lpd1500s+prienr1900+lat_abst+africa+america+asia+f_brit+f_french+protmiss+dummy_dennis", 
+                                                    data=ext_data).fit(cov_type='HC3').predict()
+    result4=smf.ols(formula="lgdpp2017  ~ predic_ruleoflaw2017+predic_lays+lat_abst+africa+america+asia+f_brit+f_french",
+                    data=ext_data).fit(cov_type='HC3')
+    
+    table=Stargazer([result1,result2,result3,result4])
+    table.covariate_order(["predic_lays","predic_ruleoflaw2017","lat_abst","africa","america","asia","f_brit","f_french"])
+    table.rename_covariates({"predic_lays":"Learning-Adjusted years of schooling","predic_ruleoflaw2017":"Rule of law index 2017",
+                             "lat_abst":"Latitude","africa":"Africa","america":"America",
+                             "asia":"Asia","f_brit":"British colony","f_french":"French Colony",
+                             "dummy_dennis":"Dummy for different source of protestant missions"})
+    table.dependent_variable_name("Dependent Variable: Log GDP per capita in 2017 ")
+
+    return table
+
+def get_table14(ext_data):
+    result1=smf.ols(formula="lgdpp2017~lays+protmiss+dummy_dennis",data=ext_data).fit(cov_type='HC3')
+    result2=smf.ols(formula="lgdpp2017~ys2017+protmiss+dummy_dennis",data=ext_data).fit(cov_type='HC3')
+    result3=smf.ols(formula="lgdpp2017~lays+prienr1900",data=ext_data).fit(cov_type='HC3')
+    result4=smf.ols(formula="lgdpp2017~ys2017+prienr1900",data=ext_data).fit(cov_type='HC3')
+    result5=smf.ols(formula="lgdpp2017~lays+protmiss+dummy_dennis+prienr1900",data=ext_data).fit(cov_type='HC3')
+    result6=smf.ols(formula="lgdpp2017~ys2017+protmiss+dummy_dennis+prienr1900",data=ext_data).fit(cov_type='HC3')
+    
+    table=Stargazer([result1,result3,result5,result2,result4,result6])
+    table.add_line("p-values for Protestant missionary activities",[result1.pvalues["protmiss"].round(3),"",result5.pvalues["protmiss"].round(3),
+               result2.pvalues["protmiss"].round(3),"",result6.pvalues["protmiss"].round(3)])
+    table.add_line("p-values for primary enrollment rate in 1900",["",result3.pvalues["prienr1900"].round(3),result5.pvalues["prienr1900"].round(3),
+               "",result4.pvalues["prienr1900"].round(3),result6.pvalues["prienr1900"].round(3)])
+    table.covariate_order(["protmiss","prienr1900"])
+    table.rename_covariates({"protmiss":"Protestant missionary activities in early 20th century","prienr1900":"Primary Enrollment in 1900"})
+    table.custom_columns(["LAYS","Years of Schooling"],[3,3])
+    table.dependent_variable_name("Dependent Variable: Log GDP per capita in 2017 ")
+    
+    return table
