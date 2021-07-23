@@ -1,10 +1,10 @@
-# OSE data science project template
+# Replication of Acemoglu et al.(2014): Institutions, Human Capital, and Development
 
 This is a template for course projects. We use [GitHub Classroom](https://classroom.github.com) to administrate our student projects and so you need to sign up for a [GitHub Account](http://github.com).
 
 ## Project overview
 
-Please ensure that a brief description of your project is included in the [README.md](https://github.com/HumanCapitalAnalysis/template-course-project/blob/master/README.md), which provides a proper citation of your baseline article. Also, please set up the following badges that allow to easily access your project notebook.
+In this paper, the purpose of Acemoglu et al.(2014) is to investigate the relationship between human capital, institutions and economic prosperity of a country .The previous literature which treat both institutions and human capital as exogenous suggest a higher return of human capital on development than Mincerian estimates. The authors believe why there is a higher return is that  the literature suffers from omitted variable bias problems and differential measurement error in these variables. To eliminate this problem, the authors instrumented human capital with historically determined variables and controled for the effect of institutions on human capital by using cross-country and cross-regional dataset. They found that the effect of instutions is robust to adding control for human capital whereas the effect of human capital decreases to Mincerian estimates when variation in instutions are controlled. In addition, they showed that human capital brought by early colonizers didn't effect on the development path of institutions
 
 <a href="https://nbviewer.jupyter.org/github/OpenSourceEconomics/ose-template-course-project/blob/master/example_project.ipynb"
    target="_parent">
