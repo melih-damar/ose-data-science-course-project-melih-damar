@@ -17,3 +17,12 @@ In this paper, the purpose of Acemoglu et al.(2014) is to investigate the relati
        width="109" height="20">
 </a>
 
+Also the state of my workflow can be found here:
+
+</a>
+<a href="https://github.com/OpenSourceEconomics/ose-data-science-course-project-melih-damar/actions/workflows/ci.yml"
+    target="_parent">
+    <img align="center"
+       src="https://github.com/OpenSourceEconomics/ose-data-science-course-project-carolinalvarez/actions/workflows/ci.yml/badge.svg"
+       width="200" height="20">
+</a>
