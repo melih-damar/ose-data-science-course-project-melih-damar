@@ -9,9 +9,6 @@ dependencies:
 - scipy
 - statsmodels
 - pip
-- linearmodels
-- xlrd
-- openpyxl
 - pip:
   
 
